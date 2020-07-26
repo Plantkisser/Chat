@@ -84,40 +84,6 @@ void* commands(void* data)
 
 
 
-void* response(void *data) 
-{
-	char buf[BUFSIZE];
-
-	printf("Accepted successfully\n");
-
-	int* sockfd = (int*) data;
-	int count = 0;
-	if  (recv(*sockfd, &count, sizeof(int), NO_FLAGS) != sizeof(int)) {
-		printf("Cannot get amount of bytes\n");
-		goto end;
-	}	
-
-	int res = 0;
-	do {
-		res = recv(*sockfd, buf, BUFSIZE, NO_FLAGS);
-		if (res <= 0) {
-			printf("Client is dead\n");
-
-			goto end;
-		}
-		count-=res;
-
-		send(*sockfd, buf, res, NO_FLAGS);
-	} while(count != 0);
-
-	send(*sockfd, "SERV", strlen("SERV"), NO_FLAGS);
-
-	end:
-	close(*sockfd);
-	free(sockfd);
-
-	return NULL;
-}
 
 void* add_to_chat(void* data)
 {
@@ -284,11 +250,6 @@ void* warden(void* data)
 				for (k = 1, l = 0; k < cl_count; l++) {
 					if (p_ward_inf->p_cl->client_list[l].enbl == ENABLE && l != i) {
 						send_message(p_ward_inf->p_cl, l, msg, len, cl_id);
-
-						/*if (send(p_ward_inf->p_cl->client_list[l].sck, &len, sizeof(int), NO_FLAGS) == -1 || send(p_ward_inf->p_cl->client_list[l].sck, msg, len, NO_FLAGS) == -1) {
-							p_ward_inf->p_cl->cl_count--;
-							p_ward_inf->p_cl->client_list[l].enbl = DISABLE;
-						}*/
 						k++;
 					}
 				}
@@ -345,7 +306,6 @@ int create_listen_socket()
 		perror("socket in function create_listen_socket");
 		exit((EXIT_FAILURE));
 	}
-	setsockopt(lsn_sck, SOL_SOCKET, SO_REUSEADDR, &optval_true, sizeof(optval_true));
 
 	struct sockaddr_un lsn_addr;
 	memset(&lsn_addr, 0, sizeof(lsn_addr));
