@@ -87,13 +87,19 @@ int main()
 
 	while(1) {
 		int len = read(STDIN, buf, BUFSIZE);
-		len--;
+		if (len == 0) {
+			sleep(5);
+			continue;
+		}
+
+
 		buf[len] = '\0';
+		if (buf[len - 1] == '\n') //if read fron terminal there is an extra '\n' so we should take it away, even if it was in file it is not necessary to send this character
+			buf[len - 1] = '\0';
 		if (strcmp(buf, "__END") == 0) {
 			close(mn_sck);
 			exit(0);
 		}
-
 		if (send(mn_sck, &len, sizeof(len), NO_FLAGS) == -1 || send(mn_sck, buf, strlen(buf), NO_FLAGS) == -1) {
 			printf("Server is dead\n");
 			exit(0);
